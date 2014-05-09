@@ -219,6 +219,7 @@ std::string HelpMessage()
 {
     string strUsage = _("Options:") + "\n" +
         "  -?                     " + _("This help message") + "\n" +
+	"  -staking=0		  " + _("Disable staking, do not run stake minter thread.") + "\n" +
         "  -conf=<file>           " + _("Specify configuration file (default: ShibeCoin.conf)") + "\n" +
         "  -pid=<file>            " + _("Specify pid file (default: ShibeCoind.pid)") + "\n" +
         "  -gen                   " + _("Generate coins") + "\n" +
@@ -349,6 +350,7 @@ bool AppInit2()
 #endif
 
     // ********************************************************* Step 2: parameter interactions
+    fStaking = GetBoolArg("-staking", true);
 
     fTestNet = GetBoolArg("-testnet");
     if (fTestNet) {

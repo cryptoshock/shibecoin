@@ -36,14 +36,14 @@ map<uint256, CBlockIndex*> mapBlockIndex;
 set<pair<COutPoint, unsigned int> > setStakeSeen;
 uint256 hashGenesisBlock = hashGenesisBlockOfficial;
 static CBigNum bnProofOfWorkLimit(~uint256(0) >> 16);
-static CBigNum bnProofOfStakeLimit(~uint256(0) >> 24);
+static CBigNum bnProofOfStakeLimit(~uint256(0) >> 4);
 
 static CBigNum bnProofOfWorkLimitTestNet(~uint256(0) >> 4);
-static CBigNum bnProofOfStakeLimitTestNet(~uint256(0) >> 24);
+static CBigNum bnProofOfStakeLimitTestNet(~uint256(0) >> 2);
 
-unsigned int nStakeMinAge = 60 * 60 * 24 * 3;	// minimum age for coin age: 8d
-unsigned int nStakeMaxAge = 60 * 60 * 24 * 40;	// stake age of full weight: 40d
-unsigned int nStakeTargetSpacing = 10 * 60;	// 10 minute stake block spacing
+unsigned int nStakeMinAge = 60 * 60 * 24 * 3;	// minimum age for coin age: 3 days
+unsigned int nStakeMaxAge = 60 * 60 * 24 * 8;	// stake age of full weight: 8d / 1 week
+unsigned int nStakeTargetSpacing = 1 * 60;	// 1 minute stake block spacing to keep transaction processing moving
 
 int64 nChainStartTime = 1399004009;
 int nCoinbaseMaturity = 20; // 20 blocks to maturity
@@ -1038,18 +1038,33 @@ static const int64 nIntervalDS = nTargetTimespanDS / nTargetSpacingDS; // 1 bloc
 unsigned int GetNextTargetRequired(const CBlockIndex* pindexLast, bool fProofOfStake) 
 {
     if (pindexLast == NULL)
-        return bnProofOfWorkLimit.GetCompact(); // genesis block
+    {
+        if(fProofOfStake)
+            return bnProofOfStakeLimit.GetCompact();
+        else
+            return bnProofOfWorkLimit.GetCompact(); // genesis block
+    }
 
     const CBlockIndex* pindexPrev = GetLastBlockIndex(pindexLast, fProofOfStake);
     if (pindexPrev->pprev == NULL)
-        return bnProofOfWorkLimit.GetCompact(); // first block
+    {
+        if(fProofOfStake)
+            return bnProofOfStakeLimit.GetCompact();
+        else
+            return bnProofOfWorkLimit.GetCompact(); // first block
+    }
     const CBlockIndex* pindexPrevPrev = GetLastBlockIndex(pindexPrev->pprev, fProofOfStake);
     if (pindexPrevPrev->pprev == NULL)
-        return bnProofOfWorkLimit.GetCompact(); // second block
+    {
+        if(fProofOfStake)
+            return bnProofOfStakeLimit.GetCompact();
+        else 
+            return bnProofOfWorkLimit.GetCompact(); // second block
+    }
 
     int64 nActualSpacing = pindexPrev->GetBlockTime() - pindexPrevPrev->GetBlockTime();
 
-    // shibecoin: target change every block
+    // shibecoin: target change every 2 blocks
     // shibecoin: retarget with exponential moving toward target spacing
     if(fProofOfStake)
     {
@@ -2563,11 +2578,11 @@ bool LoadBlockIndex(bool fAllowNew)
 
         bnProofOfStakeLimit = bnProofOfStakeLimitTestNet; // 0x00000fff PoS base target is fixed in testnet
         bnProofOfWorkLimit = bnProofOfWorkLimitTestNet; // 0x0000ffff PoW base target is fixed in testnet
-        nStakeMinAge = 10 * 60; // test net min age is 10 min
-        nStakeMaxAge = 30 * 60; // test net min age is 30 min
-	nModifierInterval = 2 * 60; // test modifier interval is 2 minutes
+        nStakeMinAge = 1 * 60; // test net min age is 10 min
+        nStakeMaxAge = 3 * 60; // test net min age is 30 min
+	nModifierInterval = 1 * 60; // test modifier interval is 2 minutes
         nCoinbaseMaturity = 4; // test maturity is 10 blocks
-        nStakeTargetSpacing = 2 * 60; // test block spacing is 2 minutes
+        nStakeTargetSpacing = 1 * 60; // test block spacing is 2 minutes
     }
 
     //
