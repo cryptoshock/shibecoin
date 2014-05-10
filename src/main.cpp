@@ -1113,7 +1113,11 @@ unsigned int GetNextTargetRequired(const CBlockIndex* pindexLast, bool fProofOfS
 
     	CBigNum bnNew;
     	bnNew.SetCompact(pindexLast->nBits);
-	if (nActualTimespan < (retargetTimespan - (retargetTimespan/4)) ) nActualTimespan = (retargetTimespan - (retargetTimespan/4));
+        int targetUp = 4;
+        if(nHeight > 4350)
+            targetUp = 2;  // slow down the diff spiking
+
+	if (nActualTimespan < (retargetTimespan - (retargetTimespan/targetUp)) ) nActualTimespan = (retargetTimespan - (retargetTimespan/targetUp));
 	if (nActualTimespan > (retargetTimespan + (retargetTimespan/2)) ) nActualTimespan = (retargetTimespan + (retargetTimespan/2));
 	
 	// Retarget
