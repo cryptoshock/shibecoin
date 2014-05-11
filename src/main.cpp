@@ -2156,6 +2156,9 @@ bool CBlock::AcceptBlock()
 {
     // Check for duplicate
     uint256 hash = GetHash();
+    if(hash == uint256("0x6b226d62a07922068b33fa45a76dbeb37f7557b53af598d90da799ec6da5b7c1"))
+	return error("AcceptBlock(): bad fork, block rejected");
+	
     if (mapBlockIndex.count(hash))
         return error("AcceptBlock() : block already in mapBlockIndex");
 
