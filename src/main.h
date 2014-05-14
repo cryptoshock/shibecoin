@@ -25,7 +25,7 @@ class CInv;
 class CRequestTracker;
 class CNode;
 
-static const int CUTOFF_POW_BLOCK = 6300;
+static const int CUTOFF_POW_BLOCK = 5430; // end PoW early //6300;
 static const unsigned int MAX_BLOCK_SIZE = 2000000;
 static const unsigned int MAX_BLOCK_SIZE_GEN = MAX_BLOCK_SIZE/2;
 static const unsigned int MAX_BLOCK_SIGOPS = MAX_BLOCK_SIZE/50;
