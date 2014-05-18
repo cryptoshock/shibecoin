@@ -42,7 +42,7 @@ static CBigNum bnProofOfWorkLimitTestNet(~uint256(0) >> 4);
 static CBigNum bnProofOfStakeLimitTestNet(~uint256(0) >> 2);
 
 unsigned int nStakeMinAge = 60 * 60 * 8;	// minimum age for coin age: 8 hours
-unsigned int nStakeMaxAge = 60 * 60 * 24 * 8;	// stake age of full weight: 8d / 1 week
+unsigned int nStakeMaxAge = 60 * 60 * 24 * 8;	// stake age of full weight: 8 days
 unsigned int nStakeTargetSpacing = 1 * 60;	// 1 minute stake block spacing to keep transaction processing moving
 
 int64 nChainStartTime = 1399004009;
@@ -1071,6 +1071,11 @@ unsigned int GetNextTargetRequired(const CBlockIndex* pindexLast, bool fProofOfS
         CBigNum bnNew;
         bnNew.SetCompact(pindexPrev->nBits);
         int64 nTargetSpacing = fProofOfStake? nStakeTargetSpacing : min(nTargetSpacingWorkMax, (int64) nStakeTargetSpacing * (1 + pindexLast->nHeight - pindexPrev->nHeight));
+
+        int nHeight = pindexLast->nHeight + 1;
+	if(nActualSpacing < 0 && nHeight > 6419)
+	    nActualSpacing = nTargetSpacing;
+
         int64 nInterval = nTargetTimespan / nTargetSpacing;
         bnNew *= ((nInterval - 1) * nTargetSpacing + nActualSpacing + nActualSpacing);
         bnNew /= ((nInterval + 1) * nTargetSpacing);
@@ -2289,7 +2294,7 @@ bool ProcessBlock(CNode* pfrom, CBlock* pblock)
     // Preliminary checks
     if (!pblock->CheckBlock())
         return error("ProcessBlock() : CheckBlock FAILED");
-
+    
     // ppcoin: verify hash target and signature of coinstake tx
     if (pblock->IsProofOfStake())
     {

@@ -216,6 +216,7 @@ static bool GetKernelStakeModifier(uint256 hashBlockFrom, uint64& nStakeModifier
         return error("GetKernelStakeModifier() : block not indexed");
     const CBlockIndex* pindexFrom = mapBlockIndex[hashBlockFrom];
     nStakeModifierHeight = pindexFrom->nHeight;
+
     nStakeModifierTime = pindexFrom->GetBlockTime();
     int64 nStakeModifierSelectionInterval = GetStakeModifierSelectionInterval();
     const CBlockIndex* pindex = pindexFrom;
@@ -288,7 +289,7 @@ bool CheckStakeKernelHash(unsigned int nBits, const CBlock& blockFrom, unsigned 
     // to secure the network when proof-of-stake difficulty is low
     int64 nTimeWeight = min((int64)nTimeTx - txPrev.nTime, (int64)nStakeMaxAge) - nStakeMinAge;
     CBigNum bnCoinDayWeight = CBigNum(nValueIn) * nTimeWeight / COIN / (24 * 60 * 60);
-
+    if(fDebug)
 	 printf(">>> CheckStakeKernelHash: nTimeWeight = %"PRI64d"\n", nTimeWeight);
     // Calculate hash
     CDataStream ss(SER_GETHASH, 0);
@@ -298,10 +299,15 @@ bool CheckStakeKernelHash(unsigned int nBits, const CBlock& blockFrom, unsigned 
 
     if (!GetKernelStakeModifier(blockFrom.GetHash(), nStakeModifier, nStakeModifierHeight, nStakeModifierTime, fPrintProofOfStake))
 	{
+             if(fDebug)
 		 printf(">>> CheckStakeKernelHash: GetKernelStakeModifier return false\n");
-        return false;
+
+             return false;
 	}
-	 printf(">>> CheckStakeKernelHash: passed GetKernelStakeModifier\n");
+
+	if(fDebug)
+ 	    printf(">>> CheckStakeKernelHash: passed GetKernelStakeModifier\n");
+
     ss << nStakeModifier;
 
     ss << nTimeBlockFrom << nTxPrevOffset << txPrev.nTime << prevout.n << nTimeTx;
@@ -323,10 +329,14 @@ bool CheckStakeKernelHash(unsigned int nBits, const CBlock& blockFrom, unsigned 
     // Now check if proof-of-stake hash meets target protocol
     if (CBigNum(hashProofOfStake) > bnCoinDayWeight * bnTargetPerCoinDay)
 	{
+		if(fDebug)
+		{
 		 printf(">>> bnCoinDayWeight = %s, bnTargetPerCoinDay=%s\n", 
 			bnCoinDayWeight.ToString().c_str(), bnTargetPerCoinDay.ToString().c_str()); 
 		 printf(">>> CheckStakeKernelHash - hashProofOfStake too much\n");
-        return false;
+		}
+
+            return false;
 	}
 
 
